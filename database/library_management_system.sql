@@ -1,0 +1,105 @@
+CREATE DATABASE IF NOT EXISTS library_management_system
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE library_management_system;
+
+
+CREATE TABLE users (
+    user_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('ADMIN', 'LIBRARIAN') NOT NULL,
+    status ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE members (
+    member_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(50) UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    phone VARCHAR(30),
+    address VARCHAR(255),
+    password_hash VARCHAR(255) NOT NULL,
+    status ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED')
+        NOT NULL DEFAULT 'ACTIVE',
+    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE TABLE authors (
+    author_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    biography TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE categories (
+    category_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE books (
+    book_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    isbn VARCHAR(20) UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    author_id INT UNSIGNED NOT NULL,
+    category_id INT UNSIGNED NOT NULL,
+    publisher VARCHAR(150),
+    publication_year YEAR,
+    description TEXT,
+    cover_image VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_books_author
+        FOREIGN KEY (author_id)
+        REFERENCES authors(author_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_books_category
+        FOREIGN KEY (category_id)
+        REFERENCES categories(category_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE book_copies (
+    copy_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    book_id INT UNSIGNED NOT NULL,
+    accession_number VARCHAR(100) NOT NULL UNIQUE,
+    shelf_location VARCHAR(100),
+
+    status ENUM(
+        'AVAILABLE',
+        'BORROWED',
+        'LOST',
+        'DAMAGED',
+        'MAINTENANCE'
+    ) NOT NULL DEFAULT 'AVAILABLE',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_book_copies_book
+        FOREIGN KEY (book_id)
+        REFERENCES books(book_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
